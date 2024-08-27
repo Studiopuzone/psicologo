@@ -1,0 +1,77 @@
+import pygame
+import random
+import numpy as np
+import colorsys
+import time
+
+# Inizializza Pygame
+pygame.init()
+
+# Imposta le dimensioni dello schermo
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Rilassamento del nervo vago")
+
+# Definisci le funzioni per generare i colori in base all'armocromia
+def generate_color(hue):
+    return tuple(int(i * 255) for i in colorsys.hsv_to_rgb(hue, 1, 1))
+
+def get_complementary_color(color):
+    h, s, v = colorsys.rgb_to_hsv(color[0]/255, color[1]/255, color[2]/255)
+    return generate_color((h + 0.5) % 1)
+
+# Definisci le funzioni per generare le forme
+def draw_circle(color, x, y, radius):
+    pygame.draw.circle(screen, color, (x, y), radius)
+
+def draw_rectangle(color, x, y, width, height):
+    pygame.draw.rect(screen, color, (x, y, width, height))
+
+# Definisci la funzione per generare il suono del nervo vago
+def play_vagus_nerve_sound():
+    frequency = 10  # Frequenza a 10 Hz
+    duration = 5  # Durata del suono in secondi
+    sample_rate = 44100
+    samples = int(sample_rate * duration)
+    
+    # Genera un'onda sinusoidale
+    t = np.linspace(0, duration, samples, False)
+    sound_data = 0.5 * np.sin(2 * np.pi * frequency * t)  # Ampiezza 0.5
+    sound_data = np.int16(sound_data * 32767)  # Converti in formato audio
+    
+    # Crea un array bidimensionale con un singolo canale
+    sound_data = np.expand_dims(sound_data, axis=1)
+
+    # Crea un oggetto Sound e riproducilo
+    sound = pygame.mixer.Sound(sound_data)
+    sound.play()
+
+# Loop principale
+running = True
+while running:
+    # Gestisci gli eventi
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Genera i colori in base all'armocromia
+    base_color = generate_color(random.uniform(0, 1))
+    complementary_color = get_complementary_color(base_color)
+
+    # Disegna le forme sullo schermo
+    screen.fill(base_color)
+    draw_circle(complementary_color, screen_width//2, screen_height//2, 200)
+    draw_rectangle(complementary_color, 100, 100, 600, 400)
+
+    # Aggiorna lo schermo
+    pygame.display.flip()
+
+    # Genera il suono del nervo vago
+    play_vagus_nerve_sound()
+
+    # Attendi un po' prima di aggiornare nuovamente lo schermo
+    time.sleep(2)
+
+# Chiudi Pygame
+pygame.quit()
